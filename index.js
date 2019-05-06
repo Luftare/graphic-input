@@ -10,4 +10,7 @@ faderInputCanvas.style.background = 'pink';
 const faderGroupInput = new FaderGroup({
   parentElement: rootElement,
   canvas: faderInputCanvas,
+  onInput: (faders) => {
+
+  }
 });

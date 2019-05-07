@@ -28,16 +28,16 @@ export default class InteractiveCanvas {
     return [];
   }
 
-  getAllValues() {
+  getValues() {
     return [];
   }
 
   handleUpdatedValues() {
-    const changedValues = this.readAndResetChangedValues();
+    const changedFaderIndexes = this.readAndResetChangedValues();
 
-    if(changedValues.length > 0) {
-      const allValues = this.getAllValues();
-      this.onChange(changedValues, allValues);
+    if(changedFaderIndexes.length > 0) {
+      const values = this.getValues();
+      this.onChange(changedFaderIndexes, values);
       this.repaint();
     }
   }

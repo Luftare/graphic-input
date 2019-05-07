@@ -74,6 +74,14 @@ export default class FaderGroup extends InteractiveCanvas {
     }).filter(index => index !== null);
   }
 
+  handleInputEnd(interaction) {
+    this.faders.forEach(fader => {
+      if(fader.interaction === interaction) {
+        fader.interaction = false;
+      }
+    })
+  }
+
   handleInputStartAt(point, interaction = 'MOUSE') {
     const { x, y } = point;
     const now = Date.now();

@@ -59,16 +59,13 @@ export default class InteractiveCanvas {
 
     canvas.addEventListener('mouseup', (e) => {
       this.mouseDown = false;
-
-      this.faders.forEach(fader => {
-        fader.activeInteraction = false;
-      });
-
+      this.handleInputEnd('MOUSE');
       this.handleUpdatedValues();
     });
 
     canvas.addEventListener('mouseleave', (e) => {
       this.mouseDown = false;
+      this.handleInputEnd('MOUSE');
       this.handleUpdatedValues();
     });
 
@@ -105,15 +102,15 @@ export default class InteractiveCanvas {
       e.preventDefault();
 
       this.forEach(e.changedTouches, (touch) => {
-        this.faders.forEach(fader => {
-          if(fader.activeInteraction === touch.identifier) {
-            fader.activeInteraction = null;
-          }
-        })
+        this.handleInputEnd(touch.identifier)
       });
 
       this.handleUpdatedValues();
     });
+  }
+
+  handleInputEnd() {
+
   }
 
   updateCanvasSize() {

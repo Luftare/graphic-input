@@ -38,7 +38,7 @@ export default class FaderGroup extends InteractiveCanvas {
       value: defaultValue,
       previousValue: defaultValue,
       lastInteractionStartTime: 0,
-      activeInteraction: null,
+      interactionId: null
     }));
 
     super.addEventListeners();
@@ -74,15 +74,15 @@ export default class FaderGroup extends InteractiveCanvas {
     }).filter(index => index !== null);
   }
 
-  handleInputEnd(interaction) {
+  handleInputEnd(interactionId) {
     this.faders.forEach(fader => {
-      if(fader.interaction === interaction) {
-        fader.interaction = false;
+      if(fader.interaction === interactionId) {
+        fader.interactionId = null;
       }
     })
   }
 
-  handleInputStartAt(point, interaction = 'MOUSE') {
+  handleInputStartAt(point, interactionId = 'MOUSE') {
     const { x, y } = point;
     const now = Date.now();
     const fader = this.xToFader(x);
@@ -93,14 +93,14 @@ export default class FaderGroup extends InteractiveCanvas {
     if(faderNewValue !== fader.value) {
       fader.previousValue = fader.value;
       fader.value = faderNewValue;
-      fader.activeInteraction = interaction;
+      fader.interactionId = interactionId;
       fader.lastInteractionStartTime = now;
     }
   }
 
-  handleInputMoveAt(point, interaction = 'MOUSE') {
+  handleInputMoveAt(point, interactionId = 'MOUSE') {
     const { x, y } = point;
-    const alreadyActiveFader = this.faders.find(fader => fader.activeInteraction === interaction);
+    const alreadyActiveFader = this.faders.find(fader => fader.interactionId === interactionId);
     const fader = this.staticFaderSelection ? alreadyActiveFader : this.xToFader(x);
     const faderNewValue = this.yToRelativeValue(y);
 

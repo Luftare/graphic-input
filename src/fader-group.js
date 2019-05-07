@@ -1,10 +1,10 @@
-import GraphicInput from './graphic-input';
+import InteractiveCanvas from './interactive-canvas';
 
-export default class FaderGroup extends GraphicInput {
+export default class FaderGroup extends InteractiveCanvas {
   constructor({
     parentElement,
     canvas,
-    onInput,
+    onChange,
     faderCount = 3,
     minValue = 0,
     maxValue = 1,
@@ -13,7 +13,7 @@ export default class FaderGroup extends GraphicInput {
     faderColorPattern = ['#000', '#444'],
     staticFaderSelection = true,
   }) {
-    super({ canvas, parentElement, onInput });
+    super({ canvas, parentElement, onChange });
 
     this.minValue = minValue;
     this.maxValue = maxValue;
@@ -22,82 +22,34 @@ export default class FaderGroup extends GraphicInput {
     this.faderColorPattern = faderColorPattern;
     this.staticFaderSelection = staticFaderSelection;
 
-    this.faders = [...Array(faderCount)].map(() => ({
+    this.faders = [...Array(faderCount)].map((_, index) => ({
+      index,
       value: defaultValue,
+      previousValue: defaultValue,
       lastInteractionStartTime: 0,
       activeInteraction: null,
     }));
 
     super.addEventListeners();
-    this.addEventListeners();
     this.repaint();
   }
 
-  addEventListeners() {
-    const { canvas } = this;
+  readAndResetChangedValues() {
+    return this.faders.filter(fader => {
+      if(fader.previousValue !== fader.value) {
+        fader.previousValue = fader.value;
+        return true;
+      }
 
-    canvas.addEventListener('mousedown', (e) => {
-      const point = this.getElementInteractionCoordinates(e);
-      this.mouseDown = true;
-      this.handleInputStartAt(point, 'mouse');
-      this.onInput(this.faders);
-    });
-
-    canvas.addEventListener('mouseup', (e) => {
-      this.mouseDown = false;
-
-      this.faders.forEach(fader => {
-        fader.activeInteraction = false;
-      })
-    });
-
-    canvas.addEventListener('mouseleave', (e) => {
-      this.mouseDown = false;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if(!this.mouseDown) return;
-      const point = this.getElementInteractionCoordinates(e);
-      this.handleInputMoveAt(point, 'mouse');
-      this.onInput(this.faders);
-    });
-
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-
-      this.forEach(e.changedTouches, (touch) => {
-        const point = this.getElementInteractionCoordinates(touch);
-        this.handleInputStartAt(point, touch.identifier);
-      });
-
-      this.onInput(this.faders);
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-
-      this.forEach(e.changedTouches, (touch) => {
-        const point = this.getElementInteractionCoordinates(touch);
-        this.handleInputMoveAt(point, touch.identifier);
-      });
-
-      this.onInput(this.faders);
-    });
-
-    canvas.addEventListener('touchend', (e) => {
-      e.preventDefault();
-
-      this.forEach(e.changedTouches, (touch) => {
-        this.faders.forEach(fader => {
-          if(fader.activeInteraction === touch.identifier) {
-            fader.activeInteraction = null;
-          }
-        })
-      });
+      return false;
     });
   }
 
-  handleInputStartAt(point, interaction) {
+  getAllValues() {
+    return this.faders;
+  }
+
+  handleInputStartAt(point, interaction = 'MOUSE') {
     const { x, y } = point;
     const now = Date.now();
     const fader = this.xToFader(x);
@@ -105,20 +57,24 @@ export default class FaderGroup extends GraphicInput {
     const didDoubleInput = timeSinceLastFaderInput < 200;
     const faderNewValue = didDoubleInput ? this.defaultValue : this.yToValue(y);
 
-    fader.value = faderNewValue;
-    fader.activeInteraction = interaction;
-    fader.lastInteractionStartTime = now;
-
-    this.repaint();
+    if(faderNewValue !== fader.value) {
+      fader.previousValue = fader.value;
+      fader.value = faderNewValue;
+      fader.activeInteraction = interaction;
+      fader.lastInteractionStartTime = now;
+    }
   }
 
-  handleInputMoveAt(point, interaction) {
+  handleInputMoveAt(point, interaction = 'MOUSE') {
     const { x, y } = point;
     const alreadyActiveFader = this.faders.find(fader => fader.activeInteraction === interaction);
     const fader = this.staticFaderSelection ? alreadyActiveFader : this.xToFader(x);
-    fader.value = this.yToValue(y);
+    const faderNewValue = this.yToValue(y);
 
-    this.repaint();
+    if(faderNewValue !== fader.value) {
+      fader.previousValue = fader.value;
+      fader.value = faderNewValue;
+    }
   }
 
   xToFader(x) {
@@ -129,7 +85,6 @@ export default class FaderGroup extends GraphicInput {
   yToValue(y) {
     const { canvas, maxValue, minValue } = this;
     const valueRange = maxValue - minValue;
-
     return (1 - y / canvas.clientHeight) * valueRange;
   }
 

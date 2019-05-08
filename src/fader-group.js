@@ -20,8 +20,7 @@ export default class FaderGroup extends InteractiveCanvas {
   }) {
     super({ canvas, parentElement, onChange });
 
-    this.defaultValue = defaultValue,
-    this.originOffset = originOffset;
+    (this.defaultValue = defaultValue), (this.originOffset = originOffset);
     this.faderColorPattern = faderColorPattern;
     this.staticFaderSelection = staticFaderSelection;
     this.faderWidth = faderWidth;
@@ -44,7 +43,7 @@ export default class FaderGroup extends InteractiveCanvas {
     super.addEventListeners();
     this.repaint();
 
-    if(values) {
+    if (values) {
       this.setValues(values);
     }
   }
@@ -58,28 +57,29 @@ export default class FaderGroup extends InteractiveCanvas {
     this.repaint();
   }
 
-
   getValues() {
     return this.faders.map(fader => fader.value);
   }
 
   readAndResetChangedValues() {
-    return this.faders.map((fader, i) => {
-      if(fader.previousValue !== fader.value) {
-        fader.previousValue = fader.value;
-        return i;
-      }
+    return this.faders
+      .map((fader, i) => {
+        if (fader.previousValue !== fader.value) {
+          fader.previousValue = fader.value;
+          return i;
+        }
 
-      return null;
-    }).filter(index => index !== null);
+        return null;
+      })
+      .filter(index => index !== null);
   }
 
   handleInputEnd(interactionId) {
     this.faders.forEach(fader => {
-      if(fader.interaction === interactionId) {
+      if (fader.interaction === interactionId) {
         fader.interactionId = null;
       }
-    })
+    });
   }
 
   handleInputStartAt(point, interactionId = 'MOUSE') {
@@ -88,9 +88,11 @@ export default class FaderGroup extends InteractiveCanvas {
     const fader = this.xToFader(x);
     const timeSinceLastFaderInput = now - fader.lastInteractionStartTime;
     const didDoubleInput = timeSinceLastFaderInput < 200;
-    const faderNewValue = didDoubleInput ? this.defaultValue : this.yToRelativeValue(y);
+    const faderNewValue = didDoubleInput
+      ? this.defaultValue
+      : this.yToRelativeValue(y);
 
-    if(faderNewValue !== fader.value) {
+    if (faderNewValue !== fader.value) {
       fader.previousValue = fader.value;
       fader.value = faderNewValue;
       fader.interactionId = interactionId;
@@ -100,11 +102,15 @@ export default class FaderGroup extends InteractiveCanvas {
 
   handleInputMoveAt(point, interactionId = 'MOUSE') {
     const { x, y } = point;
-    const alreadyActiveFader = this.faders.find(fader => fader.interactionId === interactionId);
-    const fader = this.staticFaderSelection ? alreadyActiveFader : this.xToFader(x);
+    const alreadyActiveFader = this.faders.find(
+      fader => fader.interactionId === interactionId
+    );
+    const fader = this.staticFaderSelection
+      ? alreadyActiveFader
+      : this.xToFader(x);
     const faderNewValue = this.yToRelativeValue(y);
 
-    if(faderNewValue !== fader.value) {
+    if (faderNewValue !== fader.value) {
       fader.previousValue = fader.value;
       fader.value = faderNewValue;
     }
@@ -141,8 +147,9 @@ export default class FaderGroup extends InteractiveCanvas {
     const { canvas, ctx } = this;
     const { clientWidth, clientHeight } = canvas;
     const valuesCount = this.faders.length;
-    const faderWidth = this.faderWidth * clientWidth / valuesCount;
-    const faderOffsetX = 0.5 * (1 - this.faderWidth) * clientWidth / valuesCount;
+    const faderWidth = (this.faderWidth * clientWidth) / valuesCount;
+    const faderOffsetX =
+      (0.5 * (1 - this.faderWidth) * clientWidth) / valuesCount;
     const originY = (1 - this.originOffset) * clientHeight;
 
     ctx.clearRect(0, 0, clientWidth, clientHeight);
@@ -158,9 +165,19 @@ export default class FaderGroup extends InteractiveCanvas {
       ctx.fillRect(Math.floor(x), y, Math.ceil(faderWidth), faderHeight);
 
       const handleY = y - this.handleHeight * 0.5;
-      const clampedHandleY = Math.max(0, Math.min(clientHeight - this.handleHeight, handleY));
-      ctx.fillStyle = this.handleColorPattern[i % this.handleColorPattern.length];
-      ctx.fillRect(Math.floor(x), clampedHandleY, Math.ceil(faderWidth), this.handleHeight);
+      const clampedHandleY = Math.max(
+        0,
+        Math.min(clientHeight - this.handleHeight, handleY)
+      );
+      ctx.fillStyle = this.handleColorPattern[
+        i % this.handleColorPattern.length
+      ];
+      ctx.fillRect(
+        Math.floor(x),
+        clampedHandleY,
+        Math.ceil(faderWidth),
+        this.handleHeight
+      );
     });
   }
 }

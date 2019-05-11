@@ -1,7 +1,7 @@
 export default class InteractiveCanvas {
   constructor({
     canvas = document.createElement('canvas'),
-    onChange = () => {},
+    onChange = () => { },
     parentElement
   }) {
     this.canvas = canvas;
@@ -9,7 +9,7 @@ export default class InteractiveCanvas {
     this.mouseDown = false;
     this.onChange = onChange;
 
-    if(parentElement) {
+    if (parentElement) {
       parentElement.appendChild(canvas);
     }
 
@@ -22,7 +22,7 @@ export default class InteractiveCanvas {
     }
   }
 
-  repaint() {}
+  repaint() { }
 
   readAndResetChangedValues() {
     return [];
@@ -35,7 +35,7 @@ export default class InteractiveCanvas {
   handleUpdatedValues() {
     const changedFaderIndexes = this.readAndResetChangedValues();
 
-    if(changedFaderIndexes.length > 0) {
+    if (changedFaderIndexes.length > 0) {
       const values = this.getValues();
       this.onChange(changedFaderIndexes, values);
       this.repaint();
@@ -70,7 +70,7 @@ export default class InteractiveCanvas {
     });
 
     canvas.addEventListener('mousemove', (e) => {
-      if(!this.mouseDown) return;
+      if (!this.mouseDown) return;
       const point = this.getElementInteractionCoordinates(e);
       this.handleInputMoveAt(point);
       this.handleUpdatedValues();
@@ -124,6 +124,13 @@ export default class InteractiveCanvas {
     return {
       x: event.pageX - left,
       y: event.pageY - top
+    }
+  }
+
+  getRelativePoint(point) {
+    return {
+      x: Math.max(0, Math.min(1, point.x / this.canvas.clientWidth)),
+      y: Math.max(0, Math.min(1, point.y / this.canvas.clientHeight))
     }
   }
 }
